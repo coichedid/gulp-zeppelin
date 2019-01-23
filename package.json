@@ -1,13 +1,11 @@
 {
   "name": "gulp-zeppelin",
-  "version": "0.0.1",
-  "description": "Gulp plugin to export notebooks",
+  "version": "0.0.2",
+  "description": "Gulp plugin to export notebooks and extract full script from notebook paragraphs",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Clovis Chedid",
-  "license": "ISC",
+  "repository": "github:coichedid/gulp-zeppelin",
+  "license": "Apache 2.0",
   "devDependencies": {
     "gulp": "^4.0.0",
     "gulp-dest": "^0.2.3",
