@@ -1,0 +1,23 @@
+{
+  "name": "gulp-zeppelin",
+  "version": "0.0.1",
+  "description": "Gulp plugin to export notebooks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Clovis Chedid",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^4.0.0",
+    "gulp-dest": "^0.2.3",
+    "gulp-util": "^3.0.8",
+    "through2": "^3.0.0"
+  },
+  "dependencies": {
+    "from2": "^2.3.0",
+    "node-rest-client": "^3.1.0",
+    "to-through": "^2.0.0",
+    "vinyl": "^2.2.0"
+  }
+}
