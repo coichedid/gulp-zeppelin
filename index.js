@@ -30,6 +30,8 @@ var getNotebookFromZeppelin = (server, port, noteId, cb) => {
     const regex3 = /args = {'JOB_NAME':".*"}/;
     const regex4 = /.*\.printSchema\(\)/;
     const regex5 = /.*\.show\(.*\)/;
+    const regex6 = /(bucket|key|origin) = ".*"/;
+
     allTextArray.forEach( (l) => {
       var include = true;
       if (regex1.test(l)) include = false;
@@ -41,6 +43,7 @@ var getNotebookFromZeppelin = (server, port, noteId, cb) => {
       else if (regex3.test(l)) include = false;
       else if (regex4.test(l)) include = false;
       else if (regex5.test(l)) include = false;
+      else if (regex6.test(l)) include = false;
 
       if(include) allTextArrayFiltered.push(l);
     });
