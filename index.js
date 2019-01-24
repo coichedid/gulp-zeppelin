@@ -27,7 +27,7 @@ var getNotebookFromZeppelin = (server, port, noteId, cb) => {
     var allTextArrayFiltered = [];
     const regex1 = /%pyspark/;
     const regex2 = /##(args = getResolvedOptions\(sys\.argv, \['JOB_NAME'\]\))/;
-    const regex3 = /args = {'JOB_NAME':"teste"}/;
+    const regex3 = /args = {'JOB_NAME':".*"}/;
     const regex4 = /.*\.printSchema\(\)/;
     const regex5 = /.*\.show\(.*\)/;
     allTextArray.forEach( (l) => {
