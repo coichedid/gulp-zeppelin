@@ -1,6 +1,6 @@
 {
   "name": "gulp-zeppelin",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Gulp plugin to export notebooks and extract full script from notebook paragraphs",
   "main": "index.js",
   "author": "Clovis Chedid",

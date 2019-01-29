@@ -26,11 +26,11 @@ var getNotebookFromZeppelin = (server, port, noteId, cb) => {
     var allTextArray = allTextContent.split('\n');
     var allTextArrayFiltered = [];
     const regex1 = /%pyspark/;
-    const regex2 = /##(args = getResolvedOptions\(sys\.argv, \['JOB_NAME'\]\))/;
-    const regex3 = /args = {'JOB_NAME':".*"}/;
+    const regex2 = /## (args = getResolvedOptions\(sys\.argv, \[.*\]\))/;
+    const regex3 = /args = {'JOB_NAME': '.*', 'bucket': '.*', 'key': '.*', 'origin': '.*'}/;
     const regex4 = /.*\.printSchema\(\)/;
     const regex5 = /.*\.show\(.*\)/;
-    const regex6 = /(bucket|key|origin) = ".*"/;
+    // const regex6 = /(bucket|key|origin) = ".*"/; Used default
 
     allTextArray.forEach( (l) => {
       var include = true;
@@ -43,7 +43,7 @@ var getNotebookFromZeppelin = (server, port, noteId, cb) => {
       else if (regex3.test(l)) include = false;
       else if (regex4.test(l)) include = false;
       else if (regex5.test(l)) include = false;
-      else if (regex6.test(l)) include = false;
+      // else if (regex6.test(l)) include = false; used default
 
       if(include) allTextArrayFiltered.push(l);
     });
