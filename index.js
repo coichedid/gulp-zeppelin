@@ -27,7 +27,7 @@ var getNotebookFromZeppelin = (server, port, noteId, cb) => {
     var allTextArrayFiltered = [];
     const regex1 = /%pyspark/;
     const regex2 = /## (args = getResolvedOptions\(sys\.argv, \[.*\]\))/;
-    const regex3 = /args = {'JOB_NAME': '.*', 'bucket': '.*', 'key': '.*', 'origin': '.*'}/;
+    const regex3 = /args = {'JOB_NAME': '.*', 'sqs_url': '.*'}/;
     const regex4 = /.*\.printSchema\(\)/;
     const regex5 = /.*\.show\(.*\)/;
     // const regex6 = /(bucket|key|origin) = ".*"/; Used default
