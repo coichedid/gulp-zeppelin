@@ -4,15 +4,14 @@ const toThrough = require('to-through');
 const Stream = require('stream');
 const Vinyl = require('vinyl');
 var Client = require('node-rest-client').Client;
-
-var client = new Client();
 const readableStream = new Stream.Readable({objectMode:true});
 readableStream._read = (size) => {
   if (!readableStream.alreadyGetting) readableStream.getData();
   readableStream.alreadyGetting = true;
 }
 
-var getNotebookFromZeppelin = (server, port, noteId, cb) => {
+var getNotebookFromZeppelin = (server, port, noteId, proxyOptions, cb) => {
+  var client = new Client(proxyOptions);
   const url = `http://${server}:${port}/api/notebook/export/${noteId}`
   client.get(url, (data, response) => {
     // const message = data.message.replace(new RegExp('\n','g'),'');
@@ -61,15 +60,24 @@ var getNotebookFromZeppelin = (server, port, noteId, cb) => {
 };
 
 class ZeppelinClient {
-  constructor(zeppelinServer, zeppelinPort) {
+  constructor(zeppelinServer, zeppelinPort, useProxy, proxyHost, proxyPort) {
     this.server = zeppelinServer;
     this.port = zeppelinPort;
+    if (useProxy) {
+      this.proxyOptions = {
+          proxy: {
+              host: proxyHost,
+              port: proxyPort,
+              tunnel: true
+          }
+      }
+    }
   }
 
   getNotebook(noteId, filename) {
     readableStream.getData = () => {
 
-      getNotebookFromZeppelin(this.server, this.port, noteId, (err, data) => {
+      getNotebookFromZeppelin(this.server, this.port, noteId, this.proxyOptions, (err, data) => {
         if(err) {
           console.log(err);
           return readableStream.push(null);
