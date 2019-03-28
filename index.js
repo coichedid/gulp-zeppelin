@@ -14,11 +14,12 @@ var getNotebookStruct = (paragraphsObj, paragraphTypes) => {
   var struct = {};
   paragraphsObj.paragraphs.forEach((p) => {
     const key = p.title;
-    if (key && key.lenght > 0) {
+    if (key && key.length > 0) {
       if (paragraphTypes.includes(key))
         struct[key] = p.text;
     }
   });
+  // console.log(paragraphsObj);
   return struct;
 }
 
@@ -112,9 +113,9 @@ var genFiles = (struct, fileStructures) => {
     const basePath = fileStructure.basePath;
     var text = "";
     keys.forEach((k) => {
-      t = k.type;
-      v = k.value;
-      if (t == 'key') text += `\n${struct[k]}`;
+      const t = k.type;
+      const v = k.value;
+      if (t == 'key') text += `\n${struct[v]}`;
       else if (t == 'text') text += `\n${v}`;
     })
     var file = new Vinyl({
