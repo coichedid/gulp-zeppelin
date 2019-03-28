@@ -13,7 +13,7 @@ readableStream._read = (size) => {
 var getNotebookStruct = (paragraphsObj, paragraphTypes) => {
   var struct = {};
   paragraphsObj.paragraphs.forEach((p) => {
-    key = p.title;
+    const key = p.title;
     if (key.lenght > 0) {
       if (paragraphTypes.includes(key))
         struct[key] = p.text;
