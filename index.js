@@ -104,6 +104,27 @@ var getNotebookFromZeppelin = (server, port, noteId, proxyOptions, paragraphType
   });
 };
 
+var genFiles = (struct, fileStructures) => {
+  fileStructures.forEach((fileStructure) => {
+    const fname = fileStructure.filename;
+    const keys = fileStructure.paragraphs;
+    const extension = fileStructure.extension;
+    const basePath = fileStructure.basePath;
+    var text = "";
+    keys.forEach((k) => {
+      t = k.type;
+      v = k.value;
+      if (t == 'key') text += `\n${struct[k]}`;
+      else if (t == 'text') text += `\n${v}`;
+    })
+    var file = new Vinyl({
+      path:`./${basePath}/${fname}.${extension}`,
+      contents:Buffer.from(text);
+    });
+    readableStream.push(file);
+  });
+}
+
 class ZeppelinClient {
   constructor(zeppelinServer, zeppelinPort, useProxy, proxyHost, proxyPort) {
     this.server = zeppelinServer;
@@ -128,21 +149,7 @@ class ZeppelinClient {
           return readableStream.push(null);
         }
         const struct = data.struct;
-        fileStructures.forEach((fileStructure) => {
-          const fname = fileStructure.filename;
-          const keys = fileStructure.paragraphs;
-          const extension = fileStructure.extension;
-          const basePath = fileStructure.basePath;
-          var text = "";
-          keys.forEach((k) => {
-            text += `\n${struct[k]}`;
-          })
-          var file = new Vinyl({
-            path:`./${basePath}/${fname}.${extension}`,
-            contents:Buffer.from(text);
-          });
-          readableStream.push(file);
-        });
+        genFiles(struct, fileStructures);
         // var fileAllTextContent = new Vinyl({
         //   path:`./${filename}_script.exec`,
         //   contents:Buffer.from(data.allTextContent)
