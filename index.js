@@ -14,7 +14,7 @@ var getNotebookStruct = (paragraphsObj, paragraphTypes) => {
   var struct = {};
   paragraphsObj.paragraphs.forEach((p) => {
     const key = p.title;
-    if (key.lenght > 0) {
+    if (key && key.lenght > 0) {
       if (paragraphTypes.includes(key))
         struct[key] = p.text;
     }
