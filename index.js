@@ -119,7 +119,7 @@ var genFiles = (struct, fileStructures) => {
     })
     var file = new Vinyl({
       path:`./${basePath}/${fname}.${extension}`,
-      contents:Buffer.from(text);
+      contents:Buffer.from(text)
     });
     readableStream.push(file);
   });
