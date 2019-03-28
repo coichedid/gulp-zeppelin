@@ -10,48 +10,93 @@ readableStream._read = (size) => {
   readableStream.alreadyGetting = true;
 }
 
-var getNotebookFromZeppelin = (server, port, noteId, proxyOptions, cb) => {
+var getNotebookStruct(paragraphsObj, paragraphTypes) {
+  var struct = {};
+  paragraphsObj.paragraphs.forEach((p) => {
+    key = p.title;
+    if (key.lenght > 0) {
+      if (paragraphTypes.includes(key))
+        struct[key] = p.text;
+    }
+  });
+  return struct;
+}
+
+var getNotebookFromZeppelin = (server, port, noteId, proxyOptions, paragraphTypes, cb) => {
   var client = new Client(proxyOptions);
   const url = `http://${server}:${port}/api/notebook/export/${noteId}`
   client.get(url, (data, response) => {
     // const message = data.message.replace(new RegExp('\n','g'),'');
     // console.log(data.message);
     const obj = JSON.parse(data.body);
-    var allTextContent = "";
-    obj.paragraphs.forEach((p) => {
-      allTextContent += `\n${p.text}`;
-    });
+    var struct = getNotebookStruct(obj, paragraphTypes);
 
-    var allTextArray = allTextContent.split('\n');
-    var allTextArrayFiltered = [];
     const regex1 = /%pyspark/;
-    const regex2 = /## (args = getResolvedOptions\(sys\.argv, \[.*\]\))/;
-    const regex3 = /args = {'JOB_NAME': '.*', 'sqs_url': '.*'}/;
+    // const regex2 = /## (args = getResolvedOptions\(sys\.argv, \[.*\]\))/;
+    // const regex3 = /args = {'JOB_NAME': '.*', 'sqs_url': '.*'}/;
     const regex4 = /.*\.printSchema\(\)/;
     const regex5 = /.*\.show\(.*\)/;
     // const regex6 = /(bucket|key|origin) = ".*"/; Used default
 
-    allTextArray.forEach( (l) => {
-      var include = true;
-      if (regex1.test(l)) include = false;
-      else if (regex2.test(l)) {
-        include = true;
-        var parsed = regex2.exec(l);
-        l = parsed[1];
-      }
-      else if (regex3.test(l)) include = false;
-      else if (regex4.test(l)) include = false;
-      else if (regex5.test(l)) include = false;
-      // else if (regex6.test(l)) include = false; used default
+    paragraphTypes.forEach((k) => {
+      var allTextContent = struct[k];
+      var allTextArray = allTextContent.split('\n');
+      var allTextArrayFiltered = [];
 
-      if(include) allTextArrayFiltered.push(l);
-    });
-    allTextContent = allTextArrayFiltered.join('\n');
-    // Clear %pyspark
-    // var pysparkRegexp = new RegExp('%pyspark\n','g');
-    // allTextContent = allTextContent.replace(pysparkRegexp,'');
+      allTextArray.forEach( (l) => {
+        var include = true;
+        if (regex1.test(l)) include = false;
+        // else if (regex2.test(l)) {
+        //   include = true;
+        //   var parsed = regex2.exec(l);
+        //   l = parsed[1];
+        // }
+        // else if (regex3.test(l)) include = false;
+        else if (regex4.test(l)) include = false;
+        else if (regex5.test(l)) include = false;
+        // else if (regex6.test(l)) include = false; used default
+
+        if(include) allTextArrayFiltered.push(l);
+      });
+
+      struct[k] = allTextArrayFiltered.join('\n');
+    })
+    // var allTextContent = "";
+    // obj.paragraphs.forEach((p) => {
+    //   allTextContent += `\n${p.text}`;
+    // });
+
+    // var allTextArray = allTextContent.split('\n');
+    // var allTextArrayFiltered = [];
+    // const regex1 = /%pyspark/;
+    // const regex2 = /## (args = getResolvedOptions\(sys\.argv, \[.*\]\))/;
+    // const regex3 = /args = {'JOB_NAME': '.*', 'sqs_url': '.*'}/;
+    // const regex4 = /.*\.printSchema\(\)/;
+    // const regex5 = /.*\.show\(.*\)/;
+    // // const regex6 = /(bucket|key|origin) = ".*"/; Used default
+    //
+    // allTextArray.forEach( (l) => {
+    //   var include = true;
+    //   if (regex1.test(l)) include = false;
+    //   else if (regex2.test(l)) {
+    //     include = true;
+    //     var parsed = regex2.exec(l);
+    //     l = parsed[1];
+    //   }
+    //   else if (regex3.test(l)) include = false;
+    //   else if (regex4.test(l)) include = false;
+    //   else if (regex5.test(l)) include = false;
+    //   // else if (regex6.test(l)) include = false; used default
+    //
+    //   if(include) allTextArrayFiltered.push(l);
+    // });
+    // allTextContent = allTextArrayFiltered.join('\n');
+    // // Clear %pyspark
+    // // var pysparkRegexp = new RegExp('%pyspark\n','g');
+    // // allTextContent = allTextContent.replace(pysparkRegexp,'');
     const result = {
-      allTextContent:allTextContent,
+      // allTextContent:allTextContent,
+      struct: struct,
       notebook:obj,
       name: obj.name
     }
@@ -74,24 +119,40 @@ class ZeppelinClient {
     }
   }
 
-  getNotebook(noteId, filename) {
+  getNotebook(noteId, filename, paragraphTypes, fileStructures) {
     readableStream.getData = () => {
 
-      getNotebookFromZeppelin(this.server, this.port, noteId, this.proxyOptions, (err, data) => {
+      getNotebookFromZeppelin(this.server, this.port, noteId, this.proxyOptions, paragraphTypes, (err, data) => {
         if(err) {
           console.log(err);
           return readableStream.push(null);
         }
-        var fileAllTextContent = new Vinyl({
-          path:`./${filename}_script.exec`,
-          contents:Buffer.from(data.allTextContent)
+        const struct = data.struct;
+        fileStructures.forEach((fileStructure) => {
+          const fname = fileStructure.filename;
+          const keys = fileStructure.paragraphs;
+          const extension = fileStructure.extension;
+          const basePath = fileStructure.basePath;
+          var text = "";
+          keys.forEach((k) => {
+            text += `\n${struct[k]}`;
+          })
+          var file = new Vinyl({
+            path:`./${basePath}/${fname}.${extension}`,
+            contents:Buffer.from(text);
+          });
+          readableStream.push(file);
         });
+        // var fileAllTextContent = new Vinyl({
+        //   path:`./${filename}_script.exec`,
+        //   contents:Buffer.from(data.allTextContent)
+        // });
         var str = JSON.stringify(data.notebook);
         var fileNotebook = new Vinyl({
           path:`./${filename}_notebook.json`,
           contents:Buffer.from(str)
         });
-        readableStream.push(fileAllTextContent);
+        // readableStream.push(fileAllTextContent);
         readableStream.push(fileNotebook);
         readableStream.push(null)
       });
