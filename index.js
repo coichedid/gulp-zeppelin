@@ -10,7 +10,7 @@ readableStream._read = (size) => {
   readableStream.alreadyGetting = true;
 }
 
-var getNotebookStruct(paragraphsObj, paragraphTypes) {
+var getNotebookStruct = (paragraphsObj, paragraphTypes) => {
   var struct = {};
   paragraphsObj.paragraphs.forEach((p) => {
     key = p.title;
